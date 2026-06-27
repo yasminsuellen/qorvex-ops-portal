@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qorvex | Login</title>
+  <link rel="stylesheet" href="globals.css" />
+</head>
+<body>
+
+<div class="login-screen">
+  <div class="login-box">
+    <div class="login-mark">
+      <div class="login-mark-icon">Q</div>
+      <div>
+        <div class="login-mark-text">Qorvex</div>
+        <div class="login-mark-sub">Ops Portal</div>
+      </div>
+    </div>
+
+    <h2>Sign in</h2>
+    <p>Internal access only. Use your team credentials.</p>
+
+    <div class="demo-block">
+      <div class="demo-block-label">Demo account</div>
+      <div class="demo-row" id="demo-fill">
+        <div class="demo-row-left">
+          <span class="rpill rpill-admin">Admin</span>
+          <span class="demo-row-name">Alice</span>
+        </div>
+        <span class="demo-row-cred">alice@qorvex.com</span>
+      </div>
+    </div>
+
+    <div class="login-error" id="login-error">Incorrect email or password.</div>
+
+    <div class="field">
+      <div class="field-label">Email</div>
+      <input type="email" id="email" placeholder="you@qorvex.com" />
+    </div>
+    <div class="field">
+      <div class="field-label">Password</div>
+      <input type="password" id="password" placeholder="••••••••" />
+    </div>
+
+    <button class="btn-login" id="login-btn">Sign in</button>
+  </div>
+</div>
+
+<script type="module">
+  import { saveToken, getToken, isTokenExpired } from "./auth.js";
+
+  const token = getToken();
+  if (token && !isTokenExpired(token)) {
+    window.location.href = "dashboard.html";
+  }
+
+  document.getElementById("demo-fill").addEventListener("click", () => {
+    document.getElementById("email").value = "alice@qorvex.com";
+    document.getElementById("password").value = "admin123";
+  });
+
+  document.getElementById("password").addEventListener("keydown", e => {
+    if (e.key === "Enter") doLogin();
+  });
+
+  document.getElementById("login-btn").addEventListener("click", doLogin);
+
+  async function doLogin() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const errorEl = document.getElementById("login-error");
+
+    try {
+      const res = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!res.ok) throw new Error("Invalid credentials");
+
+      const { token } = await res.json();
+      saveToken(token);
+      window.location.href = "dashboard.html";
+
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.style.display = "block";
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Qorvex Ops Portal</title>
+  <link rel="stylesheet" href="globals.css" />
+</head>
+<body>
+
+<div id="app">
+  <div class="topbar">
+    <button class="mob-menu" onclick="toggleSidebar()">☰</button>
+    <div class="topbar-logo mob">
+      <div class="topbar-logo-icon">Q</div>
+      <div><div class="topbar-logo-text">Qorvex</div></div>
+    </div>
+    <div class="topbar-logo">
+      <div class="topbar-logo-icon">Q</div>
+      <div>
+        <div class="topbar-logo-text">Qorvex</div>
+        <div class="topbar-logo-sub">Ops Portal</div>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <div class="session-pill">
+        <span class="timer-dot"></span>
+        <span style="color:var(--cement2)">Session</span>
+        <span class="timer-val" id="timer">59:59</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div style="text-align:right">
+        <div class="user-name" id="t-name"></div>
+        <div class="user-role-text" id="t-role"></div>
+      </div>
+      <div class="avatar" id="t-av"></div>
+      <button class="btn-theme" id="theme-btn" onclick="toggleTheme()"></button>
+      <button class="btn-out" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay" id="sb-ov" onclick="toggleSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Overview</div>
+      <div class="nav-item active" id="n-overview" onclick="nav('overview')">
+        <span class="nav-icon">◈</span> Overview
+      </div>
+    </div>
+    <div class="sidebar-rule"></div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Data</div>
+      <div class="nav-item" id="n-accounts" onclick="nav('accounts')">
+        <span class="nav-icon">≡</span> Accounts
+        <span class="nav-lock" id="lk-accounts" style="display:none">🔒</span>
+      </div>
+      <div class="nav-item" id="n-metrics" onclick="nav('metrics')">
+        <span class="nav-icon">∿</span> Metrics
+        <span class="nav-lock" id="lk-metrics" style="display:none">🔒</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page active" id="page-overview">
+      <div class="page-header">
+        <div class="page-title">Overview</div>
+        <div class="page-sub" id="ov-date"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Active Clients</div>
+          <div class="stat-value" id="ov-clients">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">API Calls (month)</div>
+          <div class="stat-value" id="ov-calls">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">System Health</div>
+          <div class="stat-value" id="ov-health" style="font-size:16px;margin-top:4px">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-accounts">
+      <div class="page-header">
+        <div class="page-title">Client Accounts</div>
+        <div class="page-sub">Enterprise client accounts and billing status</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Accounts</div></div>
+        <div class="panel-body">
+          <p style="color:var(--cement2);font-size:13px" id="acc-loading">Loading accounts…</p>
+          <div id="acc-content" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-metrics">
+      <div class="page-header">
+        <div class="page-title">Pipeline Metrics</div>
+        <div class="page-sub">API usage and data pipeline performance</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Usage by Pipeline</div></div>
+        <div class="panel-body">
+          <p style="color:var(--cement2);font-size:13px" id="met-loading">Loading metrics…</p>
+          <div id="met-content" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { getToken, removeToken, decodeToken, isTokenExpired } from "./auth.js"; 
+
+  const token = getToken();
+  if (!token || isTokenExpired(token)) {
+    removeToken();
+    window.location.href = "login.html";
+  }
+
+  const user = decodeToken(token);
+
+  document.getElementById("t-name").textContent = user.name;
+  document.getElementById("t-role").textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+
+  const av = document.getElementById("t-av");
+  av.textContent = user.name.split(" ").map(w => w[0]).join("");
+  av.className = "avatar " + user.role;
+
+  const noAccounts = user.role !== "admin";
+  const noMetrics = user.role === "viewer";
+
+  if (noAccounts) {
+    document.getElementById("n-accounts").classList.add("locked");
+    document.getElementById("lk-accounts").style.display = "block";
+  }
+  if (noMetrics) {
+    document.getElementById("n-metrics").classList.add("locked");
+    document.getElementById("lk-metrics").style.display = "block";
+  }
+
+  document.getElementById("ov-date").textContent =
+    new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+  let timerSecs = 3599;
+  const timerEl = document.getElementById("timer");
+  function tick() {
+    const m = String(Math.floor(timerSecs / 60)).padStart(2, "0");
+    const s = String(timerSecs % 60).padStart(2, "0");
+    timerEl.textContent = m + ":" + s;
+  }
+  tick();
+  const interval = setInterval(() => {
+    timerSecs--;
+    if (timerSecs <= 0) { clearInterval(interval); logout(); }
+    tick();
+  }, 1000);
+
+  window.logout = function () {
+    clearInterval(interval);
+    removeToken();
+    window.location.href = "login.html";
+  };
+
+  window.nav = function (page) {
+    if (page === "accounts" && noAccounts) return;
+    if (page === "metrics" && noMetrics) return;
+    document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+    document.getElementById("n-" + page).classList.add("active");
+    document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
+    document.getElementById("page-" + page).classList.add("active");
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sb-ov").classList.remove("open");
+    if (page === "overview") loadOverview();
+    if (page === "accounts") loadAccounts();
+    if (page === "metrics") loadMetrics();
+  };
+
+  window.toggleSidebar = function () {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("sb-ov").classList.toggle("open");
+  };
+
+  let isDark = true;
+  window.toggleTheme = function () {
+    isDark = !isDark;
+    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    document.getElementById("theme-btn").textContent = isDark ? "☀" : "☾";
+  };
+  document.getElementById("theme-btn").textContent = "☀";
+
+  async function apiFetch(path) {
+    const res = await fetch("http://localhost:3000" + path, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    if (res.status === 401) { logout(); return null; }
+    return res.json();
+  }
+
+  async function loadOverview() {
+    const data = await apiFetch("/api/overview");
+    if (!data) return;
+    document.getElementById("ov-clients").textContent = data.totalClients;
+    document.getElementById("ov-calls").textContent = data.apiCallsThisMonth;
+    const healthEl = document.getElementById("ov-health");
+    healthEl.textContent = data.systemHealth;
+    healthEl.style.color = data.systemHealth === "Operational" ? "var(--ok)" : "var(--warn)";
+  }
+
+  async function loadAccounts() {
+    const data = await apiFetch("/api/accounts");
+    if (!data) return;
+    document.getElementById("acc-loading").style.display = "none";
+    document.getElementById("acc-content").style.display = "block";
+    document.getElementById("acc-content").innerHTML =
+      "<p style='color:var(--cement);font-size:13px'>" + JSON.stringify(data) + "</p>";
+  }
+
+  async function loadMetrics() {
+    const data = await apiFetch("/api/metrics");
+    if (!data) return;
+    document.getElementById("met-loading").style.display = "none";
+    document.getElementById("met-content").style.display = "block";
+    document.getElementById("met-content").innerHTML =
+      "<p style='color:var(--cement);font-size:13px'>" + JSON.stringify(data) + "</p>";
+  }
+
+  loadOverview();
+</script>
+</body>
+</html> 
