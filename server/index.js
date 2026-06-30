@@ -1,14 +1,23 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import { login } from "./auth.js";
 import { authenticateToken } from "./middleware.js";
 
 dotenv.config();
 const app = express();
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 app.use(cors());
 app.use(express.json());
+app.use(express.static(join(__dirname, "../client")));
+
+app.get("/", (req, res) => {
+  res.redirect("/login.html");
+});
 
 app.post("/auth/login", login);
 
@@ -56,6 +65,7 @@ app.get("/api/metrics", authenticateToken, (req, res) => {
   ]);
 }); 
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
