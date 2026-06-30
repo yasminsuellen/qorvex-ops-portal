@@ -14,48 +14,63 @@
     <div class="topbar">
       <button class="mob-menu" onclick="toggleSidebar()">☰</button>
       <div class="topbar-logo mob">
-        <div class="topbar-logo-icon">Q</div>
+        <div class="topbar-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" />
+            <path d="M12 11L21 7M12 11L3 7M12 11V22" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" />
+          </svg>
+        </div>
         <div>
           <div class="topbar-logo-text">Qorvex</div>
         </div>
       </div>
       <div class="topbar-logo">
-        <div class="topbar-logo-icon">Q</div>
+        <div class="topbar-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" />
+            <path d="M12 11L21 7M12 11L3 7M12 11V22" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" />
+          </svg>
+        </div>
         <div>
           <div class="topbar-logo-text">Qorvex</div>
           <div class="topbar-logo-sub">Ops Portal</div>
         </div>
       </div>
       <div class="topbar-center">
-        <div class="session-pill">
-          <span class="timer-dot"></span>
-          <span style="color:var(--cement2)">Session</span>
-          <span class="timer-val" id="timer">59:59</span>
+        <div class="user-identity">
+          <span class="user-name" id="t-name"></span>
+          <span class="user-sep">|</span>
+          <span class="user-role-text" id="t-role"></span>
         </div>
       </div>
       <div class="topbar-right">
-        <div style="text-align:right">
-          <div class="user-name" id="t-name"></div>
-          <div class="user-role-text" id="t-role"></div>
-        </div>
-        <div class="avatar" id="t-av"></div>
-        <button class="btn-theme" id="theme-btn" onclick="toggleTheme()"></button>
-        <button class="btn-out" onclick="logout()">Sign out</button>
+        <span class="timer-dot"></span>
+<span class="timer-val" id="timer">59:59</span>
       </div>
     </div>
 
     <div class="sidebar-overlay" id="sb-ov" onclick="toggleSidebar()"></div>
 
+    <nav class="bottom-nav" id="bottom-nav">
+      <div class="bottom-nav-item active" id="bn-overview" onclick="nav('overview')">
+        <span class="bottom-nav-label">Overview</span>
+      </div>
+      <div class="bottom-nav-item" id="bn-accounts" onclick="nav('accounts')">
+        <span class="bottom-nav-label">Accounts</span>
+      </div>
+      <div class="bottom-nav-item" id="bn-metrics" onclick="nav('metrics')">
+        <span class="bottom-nav-label">Metrics</span>
+      </div>
+      <div class="bottom-nav-item bottom-nav-signout" onclick="logout()">
+        <span class="bottom-nav-label">Sign out</span>
+      </div>
+    </nav>
+
     <div class="sidebar" id="sidebar">
       <div class="sidebar-group">
-        <div class="sidebar-group-label">Overview</div>
         <div class="nav-item active" id="n-overview" onclick="nav('overview')">
           <span class="nav-icon">◈</span> Overview
         </div>
-      </div>
-      <div class="sidebar-rule"></div>
-      <div class="sidebar-group">
-        <div class="sidebar-group-label">Data</div>
         <div class="nav-item" id="n-accounts" onclick="nav('accounts')">
           <span class="nav-icon">≡</span> Accounts
           <span class="nav-lock" id="lk-accounts" style="display:none">🔒</span>
@@ -64,6 +79,9 @@
           <span class="nav-icon">∿</span> Metrics
           <span class="nav-lock" id="lk-metrics" style="display:none">🔒</span>
         </div>
+      </div>
+      <div class="sidebar-bottom">
+        <button class="btn-out" onclick="logout()">Sign out</button>
       </div>
     </div>
 
@@ -84,7 +102,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-label">System Health</div>
-            <div class="stat-value" id="ov-health" style="font-size:16px;margin-top:4px">—</div>
+            <div class="stat-value" id="ov-health" style="font-size:15px;text-transform:uppercase;letter-spacing:.06em">—</div>
           </div>
         </div>
       </div>
@@ -137,10 +155,6 @@
     document.getElementById("t-name").textContent = user.name;
     document.getElementById("t-role").textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
 
-    const av = document.getElementById("t-av");
-    av.textContent = user.name.split(" ").map(w => w[0]).join("");
-    av.className = "avatar " + user.role;
-
     const noAccounts = user.role !== "admin";
     const noMetrics = user.role === "viewer";
 
@@ -181,6 +195,8 @@
       if (page === "metrics" && noMetrics) return;
       document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
       document.getElementById("n-" + page).classList.add("active");
+      document.querySelectorAll(".bottom-nav-item").forEach(el => el.classList.remove("active"));
+      document.getElementById("bn-" + page).classList.add("active");
       document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
       document.getElementById("page-" + page).classList.add("active");
       document.getElementById("sidebar").classList.remove("open");
@@ -190,18 +206,17 @@
       if (page === "metrics") loadMetrics();
     };
 
+    if (noAccounts) {
+      document.getElementById("bn-accounts").classList.add("locked");
+    }
+    if (noMetrics) {
+      document.getElementById("bn-metrics").classList.add("locked");
+    }
+
     window.toggleSidebar = function () {
       document.getElementById("sidebar").classList.toggle("open");
       document.getElementById("sb-ov").classList.toggle("open");
     };
-
-    let isDark = true;
-    window.toggleTheme = function () {
-      isDark = !isDark;
-      document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
-      document.getElementById("theme-btn").textContent = isDark ? "☀" : "☾";
-    };
-    document.getElementById("theme-btn").textContent = "☀";
 
     async function apiFetch(path) {
       const res = await fetch("http://localhost:3000" + path, {
@@ -242,16 +257,14 @@
           <tbody>
             ${data.map(a => {
         const statusColor = a.status === "Active" ? "var(--ok)" : a.status === "Trial" ? "var(--warn)" : "var(--err)";
-        const statusBg = a.status === "Active" ? "var(--ok-bg)" : a.status === "Trial" ? "var(--warn-bg)" : "var(--err-bg)";
-        const statusBd = a.status === "Active" ? "var(--ok-bd)" : a.status === "Trial" ? "var(--warn-bd)" : "var(--err-bd)";
         const calls = a.calls > 999 ? (a.calls / 1000).toFixed(0) + "k" : a.calls || "—";
         const mrr = a.mrr ? "$" + a.mrr.toLocaleString() : "—";
         return `<tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:10px 14px;color:var(--onyx);font-weight:500">${a.name}</td>
                 <td style="padding:10px 14px;color:var(--cement)">${a.plan}</td>
                 <td style="padding:10px 14px">
-                  <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:4px;background:${statusBg};color:${statusColor};border:1px solid ${statusBd}">
-                    <span style="width:5px;height:5px;border-radius:50%;background:currentColor"></span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:${statusColor}">
+                    <span style="width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0"></span>
                     ${a.status}
                   </span>
                 </td>
@@ -272,19 +285,26 @@
       document.getElementById("met-loading").style.display = "none";
       document.getElementById("met-content").style.display = "block";
       document.getElementById("met-content").innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
-        ${data.map(p => `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
-            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px">
-              <div style="font-size:12px;color:var(--cement);font-weight:500">${p.name}</div>
-              <div style="font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--onyx)">${(p.calls / 1000).toFixed(0)}k</div>
+      <div>
+        ${data.map((p, i) => `
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:16px;padding:14px 0;${i < data.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
+            <div>
+              <div style="font-size:13px;font-weight:500;color:var(--onyx);margin-bottom:6px">${p.name}</div>
+              <div style="height:2px;background:var(--border);border-radius:2px;overflow:hidden">
+                <div style="height:100%;background:var(--accent);width:${Math.min(100, Math.round((p.calls / 750000) * 100))}%"></div>
+              </div>
             </div>
-            <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px">
-              <div style="height:100%;border-radius:2px;background:var(--accent);width:${Math.min(100, Math.round((p.calls / 750000) * 100))}%"></div>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:var(--cement2);margin-bottom:2px">Calls</div>
+              <div style="font-size:13px;font-weight:600;color:var(--onyx)">${(p.calls / 1000).toFixed(0)}k</div>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--cement2)">
-              <span>Error rate: <span style="color:${parseFloat(p.errorRate) > 0.1 ? 'var(--warn)' : 'var(--ok)'}">${p.errorRate}</span></span>
-              <span>p50: ${p.latency}</span>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:var(--cement2);margin-bottom:2px">Error rate</div>
+              <div style="font-size:13px;font-weight:600;color:${parseFloat(p.errorRate) > 0.1 ? 'var(--warn)' : 'var(--ok)'}">${p.errorRate}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;color:var(--cement2);margin-bottom:2px">p50</div>
+              <div style="font-size:13px;font-weight:600;color:var(--onyx)">${p.latency}</div>
             </div>
           </div>
         `).join("")}
