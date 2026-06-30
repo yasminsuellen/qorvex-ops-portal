@@ -27,13 +27,18 @@
     <p>Internal access only. Use your team credentials.</p>
 
     <div class="demo-block">
-      <div class="demo-block-label">Demo account</div>
-      <div class="demo-row" id="demo-fill">
-        <div class="demo-row-left">
-          <span class="rpill rpill-admin">Admin</span>
-          <span class="demo-row-name">Alice</span>
-        </div>
-        <span class="demo-row-cred">alice@qorvex.com</span>
+      <div class="demo-block-label">Demo accounts</div>
+      <div class="demo-row" id="demo-fill-alice">
+        <span class="demo-row-name">Alice Mercer</span>
+        <span class="rpill rpill-admin">Admin</span>
+      </div>
+      <div class="demo-row" id="demo-fill-bruno">
+        <span class="demo-row-name">Bruno Salave</span>
+        <span class="rpill rpill-analyst">Analyst</span>
+      </div>
+      <div class="demo-row" id="demo-fill-clara">
+        <span class="demo-row-name">Clara Bittencourt</span>
+        <span class="rpill rpill-viewer">Viewer</span>
       </div>
     </div>
 
@@ -60,9 +65,19 @@
     window.location.href = "dashboard.html";
   }
 
-  document.getElementById("demo-fill").addEventListener("click", () => {
+  document.getElementById("demo-fill-alice").addEventListener("click", () => {
     document.getElementById("email").value = "alice@qorvex.com";
     document.getElementById("password").value = "admin123";
+  });
+
+  document.getElementById("demo-fill-bruno").addEventListener("click", () => {
+    document.getElementById("email").value = "bruno@qorvex.com";
+    document.getElementById("password").value = "analyst123";
+  });
+
+  document.getElementById("demo-fill-clara").addEventListener("click", () => {
+    document.getElementById("email").value = "clara@qorvex.com";
+    document.getElementById("password").value = "viewer123";
   });
 
   document.getElementById("password").addEventListener("keydown", e => {

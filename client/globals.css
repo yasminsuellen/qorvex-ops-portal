@@ -192,7 +192,7 @@ html, body {
 .btn-login {
   width: 100%;
   background: var(--accent);
-  color: #111;
+  color: #fff;
   border: none;
   border-radius: var(--radius);
   padding: 10px;
@@ -210,14 +210,19 @@ html, body {
 .rpill {
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 7px;
+  padding: 2px 0;
   border-radius: 4px;
-  letter-spacing: .03em;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  width: 64px;
+  text-align: center;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
-.rpill-admin   { background: var(--accent); color: #111; }
-.rpill-analyst { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-bd); }
-.rpill-viewer  { background: var(--surface3); color: var(--cement); border: 1px solid var(--border2); }
+.rpill-admin   { background: var(--accent); color: #fff; }
+.rpill-analyst { background: var(--accent-bg); color: #fff; border: 1px solid var(--accent-bd); }
+.rpill-viewer  { background: var(--surface3); color: #fff; border: 1px solid var(--border2); }
 
 /* ── APP SHELL ── */
 
